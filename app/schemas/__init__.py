@@ -3,26 +3,14 @@ usage
 from app.schemas import CourseCreate, LessonResponse, ExerciseUpdate
 """
 
-from ..schemas.course import (
-    CourseBase,
-    CourseCreate,
-    CourseUpdate,
-    CourseResponse,
-)
-
-from ..schemas.lesson import (
-    LessonBase,
-    LessonCreate,
-    LessonUpdate,
-    LessonResponse,
-)
-
+from ..schemas.course import CourseBase, CourseCreate, CourseResponse, CourseUpdate
 from ..schemas.exercise import (
     ExerciseBase,
     ExerciseCreate,
-    ExerciseUpdate,
     ExerciseResponse,
+    ExerciseUpdate,
 )
+from ..schemas.lesson import LessonBase, LessonCreate, LessonResponse, LessonUpdate
 
 __all__ = [
     # Course

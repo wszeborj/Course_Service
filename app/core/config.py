@@ -1,9 +1,10 @@
 from functools import lru_cache
-import os
+
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str
@@ -30,9 +31,7 @@ class Settings(BaseSettings):
 
     @property
     def AUTH0_ISSUER(self) -> str:
-        return (
-            f"https://{self.AUTH0_DOMAIN}/"
-        )
+        return f"https://{self.AUTH0_DOMAIN}/"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -41,8 +40,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
 
 settings: Settings = get_settings()

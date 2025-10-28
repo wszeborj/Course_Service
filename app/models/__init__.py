@@ -3,12 +3,10 @@ usage
 from app.models import Course, Lesson, Exercise
 """
 
-from ..models.course import Course
-from ..models.lesson import Lesson
-from ..models.exercise import Exercise
+from typing import List
 
-__all__ = [
-    Course,
-    Lesson,
-    Exercise
-]
+from ..models.course import Course
+from ..models.exercise import Exercise
+from ..models.lesson import Lesson
+
+__all__: List = [Course, Lesson, Exercise]

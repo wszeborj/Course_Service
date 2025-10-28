@@ -1,24 +1,13 @@
 from fastapi import APIRouter
-from ...api.v1 import courses, lessons, exercises
+
+from ...api.v1 import courses, exercises, lessons
 
 api_router = APIRouter()
-api_router.include_router(
-    courses.router,
-    prefix="/courses",
-    tags=["courses"]
-)
+api_router.include_router(courses.router, prefix="/courses", tags=["courses"])
 
-api_router.include_router(
-    lessons.router,
-    prefix="/lessons",
-    tags=["lessons"]
-)
+api_router.include_router(lessons.router, prefix="/lessons", tags=["lessons"])
 
-api_router.include_router(
-    exercises.router,
-    prefix="/exercises",
-    tags=["exercises"]
-)
+api_router.include_router(exercises.router, prefix="/exercises", tags=["exercises"])
 
 """
 /api/v1/courses

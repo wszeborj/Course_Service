@@ -8,7 +8,7 @@
 ## General info
 <details>
 <summary>Click here to see general information about <b>Project</b>!</summary>
-<b>Course Service - Online Learning Platform API</b>. 
+<b>Course Service - Online Learning Platform API</b>.
 FastAPI-based REST API for managing online programming courses, lessons, and exercises.
 </details>
 

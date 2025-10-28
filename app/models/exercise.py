@@ -1,13 +1,19 @@
-import uuid
-from sqlalchemy import Column, String, Text, Integer, ForeignKey, DateTime, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import relationship
+
 from ..db.base import Base
+
 
 class Exercise(Base):
     __tablename__ = "exercises"
 
     id = Column(Integer, primary_key=True, index=True)
-    lesson_id = Column(Integer, ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False, index=True)
+    lesson_id = Column(
+        Integer,
+        ForeignKey("lessons.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=True)
     exercise = Column(Text, nullable=True)
@@ -16,5 +22,5 @@ class Exercise(Base):
 
     lesson = relationship("Lesson", back_populates="exercises")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Exercise(id={self.id}, title='{self.title}', lesson_id={self.lesson_id})>"

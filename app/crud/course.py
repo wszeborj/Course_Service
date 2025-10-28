@@ -1,9 +1,10 @@
-from sqlalchemy.orm import Session
 from typing import List, Optional
-from collections.abc import Sequence
+
+from sqlalchemy.orm import Session
 
 from ..models import Course
 from ..schemas import CourseCreate, CourseUpdate
+
 
 def create_course(db: Session, course: CourseCreate) -> Course:
     db_course = Course(**course.model_dump())
@@ -12,23 +13,21 @@ def create_course(db: Session, course: CourseCreate) -> Course:
     db.refresh(db_course)
     return db_course
 
+
 def get_course(db: Session, course_id: int) -> Optional[Course]:
     return db.query(Course).filter(Course.id == course_id).first()
 
-def get_courses(
-        db: Session,
-        skip: int = 0,
-        limit: int = 100
-) -> List[Course]:
+
+def get_courses(db: Session, skip: int = 0, limit: int = 100) -> List[Course]:
     return db.query(Course).offset(skip).limit(limit).all()
+
 
 def get_courses_count(db: Session) -> int:
     return db.query(Course).count()
 
+
 def update_course(
-        db: Session,
-        course_id: int,
-        course_update: CourseUpdate
+    db: Session, course_id: int, course_update: CourseUpdate
 ) -> Optional[Course]:
     db_course = get_course(db, course_id)
     if not db_course:
@@ -41,6 +40,7 @@ def update_course(
     db.commit()
     db.refresh(db_course)
     return db_course
+
 
 def delete_course(db: Session, course_id: int) -> bool:
     db_course = get_course(db, course_id)

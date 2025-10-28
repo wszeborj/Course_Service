@@ -1,7 +1,8 @@
-import uuid
-from sqlalchemy import Column, String, Text, Boolean, Integer, DateTime, func
+from sqlalchemy import Column, DateTime, Integer, String, Text, func
 from sqlalchemy.orm import relationship
+
 from ..db.base import Base
+
 
 class Course(Base):
     __tablename__ = "courses"
@@ -13,8 +14,11 @@ class Course(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    lessons = relationship("Lesson",  back_populates="course",  cascade="all, delete-orphan",)
+    lessons = relationship(
+        "Lesson",
+        back_populates="course",
+        cascade="all, delete-orphan",
+    )
 
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Course(id={self.id}, title='{self.title}')>"
