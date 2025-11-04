@@ -1,35 +1,45 @@
-from typing import List, Optional
+from collections.abc import Sequence
+from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Course
 from ..schemas import CourseCreate, CourseUpdate
 
 
-def create_course(db: Session, course: CourseCreate) -> Course:
+async def create_course(db: AsyncSession, course: CourseCreate) -> Course:
     db_course = Course(**course.model_dump())
     db.add(db_course)
-    db.commit()
-    db.refresh(db_course)
+    await db.commit()
+    await db.refresh(db_course)
     return db_course
 
 
-def get_course(db: Session, course_id: int) -> Optional[Course]:
-    return db.query(Course).filter(Course.id == course_id).first()
+async def get_course(db: AsyncSession, course_id: int) -> Optional[Course]:
+    stmt = select(Course).where(Course.id == course_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 
-def get_courses(db: Session, skip: int = 0, limit: int = 100) -> List[Course]:
-    return db.query(Course).offset(skip).limit(limit).all()
+async def get_courses(
+    db: AsyncSession, skip: int = 0, limit: int = 100
+) -> Sequence[Course]:
+    stmt = select(Course).offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
-def get_courses_count(db: Session) -> int:
-    return db.query(Course).count()
+async def get_courses_count(db: AsyncSession) -> int:
+    stmt = select(func.count()).select_from(Course)
+    results = await db.execute(stmt)
+    return results.scalar() or 0
 
 
-def update_course(
-    db: Session, course_id: int, course_update: CourseUpdate
+async def update_course(
+    db: AsyncSession, course_id: int, course_update: CourseUpdate
 ) -> Optional[Course]:
-    db_course = get_course(db, course_id)
+    db_course = await get_course(db, course_id)
     if not db_course:
         return None
 
@@ -37,16 +47,16 @@ def update_course(
     for field, value in update_data.items():
         setattr(db_course, field, value)
 
-    db.commit()
-    db.refresh(db_course)
+    await db.commit()
+    await db.refresh(db_course)
     return db_course
 
 
-def delete_course(db: Session, course_id: int) -> bool:
-    db_course = get_course(db, course_id)
+async def delete_course(db: AsyncSession, course_id: int) -> bool:
+    db_course = await get_course(db, course_id)
     if not db_course:
         return False
 
-    db.delete(db_course)
-    db.commit()
+    await db.delete(db_course)
+    await db.commit()
     return True

@@ -1,47 +1,53 @@
-from typing import List, Optional
+from collections.abc import Sequence
+from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Lesson
 from ..schemas import LessonCreate, LessonUpdate
 
 
-def create_lesson(db: Session, lesson: LessonCreate) -> Lesson:
-    db_lesson = Lesson(**lesson.model_dump(exclude={"exercises"}))
+async def create_lesson(db: AsyncSession, lesson: LessonCreate) -> Lesson:
+    db_lesson = Lesson(**lesson.model_dump())
     db.add(db_lesson)
-    db.commit()
-    db.refresh(db_lesson)
+    await db.commit()
+    await db.refresh(db_lesson)
     return db_lesson
 
 
-def get_lesson(db: Session, lesson_id: int) -> Optional[Lesson]:
-    return db.query(Lesson).filter(Lesson.id == lesson_id).first()
+async def get_lesson(db: AsyncSession, lesson_id: int) -> Optional[Lesson]:
+    stmt = select(Lesson).where(Lesson.id == lesson_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 
-def get_lessons(db: Session, skip: int = 0, limit: int = 100) -> List[Lesson]:
-    return db.query(Lesson).offset(skip).limit(limit).all()
+async def get_lessons(
+    db: AsyncSession, skip: int = 0, limit: int = 100
+) -> Sequence[Lesson]:
+    stmt = select(Lesson).offset(skip).limit(limit)
+    results = await db.execute(stmt)
+    return results.scalars().all()
 
 
-def get_lessons_by_course(
-    db: Session, course_id: int, skip: int = 0, limit: int = 100
-) -> List[Lesson]:
-    return (
-        db.query(Lesson)
-        .filter(Lesson.course_id == course_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+async def get_lessons_by_course(
+    db: AsyncSession, course_id: int, skip: int = 0, limit: int = 100
+) -> Sequence[Lesson]:
+    stmt = select(Lesson).where(Lesson.course_id == course_id).offset(skip).limit(limit)
+    results = await db.execute(stmt)
+    return results.scalars().all()
 
 
-def get_lessons_count(db: Session) -> int:
-    return db.query(Lesson).count()
+async def get_lessons_count(db: AsyncSession) -> int:
+    stmt = select(func.count()).select_from(Lesson)
+    result = await db.execute(stmt)
+    return result.scalar() or 0
 
 
-def update_lesson(
-    db: Session, lesson_id: int, lesson_update: LessonUpdate
+async def update_lesson(
+    db: AsyncSession, lesson_id: int, lesson_update: LessonUpdate
 ) -> Optional[Lesson]:
-    db_lesson = get_lesson(db, lesson_id)
+    db_lesson = await get_lesson(db, lesson_id)
     if not db_lesson:
         return None
 
@@ -49,16 +55,16 @@ def update_lesson(
     for field, value in update_data.items():
         setattr(db_lesson, field, value)
 
-    db.commit()
-    db.refresh(db_lesson)
+    await db.commit()
+    await db.refresh(db_lesson)
     return db_lesson
 
 
-def delete_lesson(db: Session, lesson_id: int) -> bool:
-    db_lesson = get_lesson(db, lesson_id)
+async def delete_lesson(db: AsyncSession, lesson_id: int) -> bool:
+    db_lesson = await get_lesson(db, lesson_id)
     if not db_lesson:
         return False
 
-    db.delete(db_lesson)
-    db.commit()
+    await db.delete(db_lesson)
+    await db.commit()
     return True

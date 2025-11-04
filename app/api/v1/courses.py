@@ -7,10 +7,10 @@ CRUD Operations:
 - DELETE /courses/{id}     → Delete course
 """
 
-from typing import List
+from typing import List, Sequence
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import crud
 from ...db.session import get_db
@@ -26,8 +26,10 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     summary="Create a new course",
 )
-def create_course(course: CourseCreate, db: Session = Depends(get_db)) -> Course:
-    return crud.create_course(db=db, course=course)
+async def create_course(
+    course: CourseCreate, db: AsyncSession = Depends(get_db)
+) -> Course:
+    return await crud.create_course(db=db, course=course)
 
 
 @router.get(
@@ -35,10 +37,10 @@ def create_course(course: CourseCreate, db: Session = Depends(get_db)) -> Course
     response_model=List[CourseResponse],
     summary="Get list of courses",
 )
-def get_courses(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-) -> List[Course]:
-    courses = crud.get_courses(db, skip=skip, limit=limit)
+async def get_courses(
+    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
+) -> Sequence[Course]:
+    courses = await crud.get_courses(db, skip=skip, limit=limit)
     return courses
 
 
@@ -47,8 +49,8 @@ def get_courses(
     response_model=CourseResponse,
     summary="Get a specific course",
 )
-def get_course(course_id: int, db: Session = Depends(get_db)) -> Course:
-    course = crud.get_course(db, course_id=course_id)
+async def get_course(course_id: int, db: AsyncSession = Depends(get_db)) -> Course:
+    course = await crud.get_course(db, course_id=course_id)
 
     if course is None:
         raise HTTPException(
@@ -64,10 +66,10 @@ def get_course(course_id: int, db: Session = Depends(get_db)) -> Course:
     response_model=CourseResponse,
     summary="Update a course",
 )
-def update_course(
-    course_id: int, course_update: CourseUpdate, db: Session = Depends(get_db)
+async def update_course(
+    course_id: int, course_update: CourseUpdate, db: AsyncSession = Depends(get_db)
 ) -> Course:
-    updated_course = crud.update_course(
+    updated_course = await crud.update_course(
         db, course_id=course_id, course_update=course_update
     )
 
@@ -85,8 +87,8 @@ def update_course(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a course",
 )
-def delete_course(course_id: int, db: Session = Depends(get_db)) -> None:
-    success = crud.delete_course(db, course_id=course_id)
+async def delete_course(course_id: int, db: AsyncSession = Depends(get_db)) -> None:
+    success = await crud.delete_course(db, course_id=course_id)
 
     if not success:
         raise HTTPException(

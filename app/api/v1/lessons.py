@@ -9,10 +9,10 @@ CRUD Operations:
 - DELETE /lessons/{id}         → Delete lesson
 """
 
-from typing import List
+from typing import List, Sequence
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ... import crud
 from ...db.session import get_db
@@ -28,15 +28,17 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     summary="Create a new lesson",
 )
-def create_lesson(lesson: LessonCreate, db: Session = Depends(get_db)) -> Lesson:
-    course = crud.get_course(db, course_id=lesson.course_id)
+async def create_lesson(
+    lesson: LessonCreate, db: AsyncSession = Depends(get_db)
+) -> Lesson:
+    course = await crud.get_course(db, course_id=lesson.course_id)
     if course is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Course with id {lesson.course_id} not found",
         )
 
-    return crud.create_lesson(db=db, lesson=lesson)
+    return await crud.create_lesson(db=db, lesson=lesson)
 
 
 @router.get(
@@ -44,10 +46,10 @@ def create_lesson(lesson: LessonCreate, db: Session = Depends(get_db)) -> Lesson
     response_model=List[LessonResponse],
     summary="Get list of all lessons",
 )
-def get_lessons(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-) -> List[Lesson]:
-    lessons = crud.get_lessons(db, skip=skip, limit=limit)
+async def get_lessons(
+    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
+) -> Sequence[Lesson]:
+    lessons = await crud.get_lessons(db, skip=skip, limit=limit)
     return lessons
 
 
@@ -56,17 +58,17 @@ def get_lessons(
     response_model=List[LessonResponse],
     summary="Get lessons from specific course",
 )
-def get_lessons_by_course(
-    course_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-) -> List[Lesson]:
-    course = crud.get_course(db, course_id=course_id)
+async def get_lessons_by_course(
+    course_id: int, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
+) -> Sequence[Lesson]:
+    course = await crud.get_course(db, course_id=course_id)
     if course is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Course with id {course_id} not found",
         )
 
-    lessons = crud.get_lessons_by_course(
+    lessons = await crud.get_lessons_by_course(
         db, course_id=course_id, skip=skip, limit=limit
     )
     return lessons
@@ -77,8 +79,8 @@ def get_lessons_by_course(
     response_model=LessonResponse,
     summary="Get a specific lesson",
 )
-def get_lesson(lesson_id: int, db: Session = Depends(get_db)) -> Lesson:
-    lesson = crud.get_lesson(db, lesson_id=lesson_id)
+async def get_lesson(lesson_id: int, db: AsyncSession = Depends(get_db)) -> Lesson:
+    lesson = await crud.get_lesson(db, lesson_id=lesson_id)
 
     if lesson is None:
         raise HTTPException(
@@ -94,10 +96,10 @@ def get_lesson(lesson_id: int, db: Session = Depends(get_db)) -> Lesson:
     response_model=LessonResponse,
     summary="Update a lesson",
 )
-def update_lesson(
-    lesson_id: int, lesson_update: LessonUpdate, db: Session = Depends(get_db)
+async def update_lesson(
+    lesson_id: int, lesson_update: LessonUpdate, db: AsyncSession = Depends(get_db)
 ) -> Lesson:
-    updated_lesson = crud.update_lesson(
+    updated_lesson = await crud.update_lesson(
         db, lesson_id=lesson_id, lesson_update=lesson_update
     )
 
@@ -115,8 +117,8 @@ def update_lesson(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a lesson",
 )
-def delete_lesson(lesson_id: int, db: Session = Depends(get_db)) -> None:
-    success = crud.delete_lesson(db, lesson_id=lesson_id)
+async def delete_lesson(lesson_id: int, db: AsyncSession = Depends(get_db)) -> None:
+    success = await crud.delete_lesson(db, lesson_id=lesson_id)
 
     if not success:
         raise HTTPException(

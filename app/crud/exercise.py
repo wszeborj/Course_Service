@@ -1,48 +1,58 @@
 from collections.abc import Sequence
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Exercise
 from ..schemas import ExerciseCreate, ExerciseUpdate
 
 
-def create_exercise(db: Session, exercise: ExerciseCreate) -> Exercise:
+async def create_exercise(db: AsyncSession, exercise: ExerciseCreate) -> Exercise:
     db_exercise = Exercise(**exercise.model_dump())
     db.add(db_exercise)
-    db.commit()
-    db.refresh(db_exercise)
+    await db.commit()
+    await db.refresh(db_exercise)
     return db_exercise
 
 
-def get_exercise(db: Session, exercise_id: int) -> Optional[Exercise]:
-    return db.query(Exercise).filter(Exercise.id == exercise_id).first()
+async def get_exercise(db: AsyncSession, exercise_id: int) -> Optional[Exercise]:
+    stmt = select(Exercise).where(Exercise.id == exercise_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 
-def get_exercises(db: Session, skip: int = 0, limit: int = 100) -> list[Exercise]:
-    return db.query(Exercise).offset(skip).limit(limit).all()
-
-
-def get_exercises_by_lesson(
-    db: Session, lesson_id: int, skip: int = 0, limit: int = 100
+async def get_exercises(
+    db: AsyncSession, skip: int = 0, limit: int = 100
 ) -> Sequence[Exercise]:
-    return (
-        db.query(Exercise)
-        .filter(Exercise.lesson_id == lesson_id)
+    stmt = select(Exercise).offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+async def get_exercises_by_lesson(
+    db: AsyncSession, lesson_id: int, skip: int = 0, limit: int = 100
+) -> Sequence[Exercise]:
+    stmt = (
+        select(Exercise)
+        .where(Exercise.lesson_id == lesson_id)
         .offset(skip)
         .limit(limit)
-        .all()
     )
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
-def get_exercises_count(db: Session) -> int:
-    return db.query(Exercise).count()
+async def get_exercises_count(db: AsyncSession) -> int:
+    stmt = select(func.count()).select_from(Exercise)
+    result = await db.execute(stmt)
+    return result.scalar() or 0
 
 
-def update_exercise(
-    db: Session, exercise_id: int, exercise_update: ExerciseUpdate
+async def update_exercise(
+    db: AsyncSession, exercise_id: int, exercise_update: ExerciseUpdate
 ) -> Optional[Exercise]:
-    db_exercise = get_exercise(db, exercise_id)
+    db_exercise = await get_exercise(db, exercise_id)
     if not db_exercise:
         return None
 
@@ -50,16 +60,16 @@ def update_exercise(
     for field, value in update_data.items():
         setattr(db_exercise, field, value)
 
-    db.commit()
-    db.refresh(db_exercise)
+    await db.commit()
+    await db.refresh(db_exercise)
     return db_exercise
 
 
-def delete_exercise(db: Session, exercise_id: int) -> bool:
-    db_exercise = get_exercise(db, exercise_id)
+async def delete_exercise(db: AsyncSession, exercise_id: int) -> bool:
+    db_exercise = await get_exercise(db, exercise_id)
     if not db_exercise:
         return False
 
-    db.delete(db_exercise)
-    db.commit()
+    await db.delete(db_exercise)
+    await db.commit()
     return True

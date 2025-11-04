@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 
 class CourseBase(BaseModel):
-    author_id: int = Field(description="ID of the author of course", gt=0)
 
     title: str = Field(
         min_length=3,
@@ -21,7 +20,7 @@ class CourseBase(BaseModel):
 
 
 class CourseCreate(CourseBase):
-    pass
+    author_id: int = Field(description="ID of the author of course", gt=0)
 
 
 class CourseUpdate(BaseModel):
