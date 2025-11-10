@@ -9,12 +9,15 @@ services:
     volumes:
       - .:/app
     ports:
-      - 8000:8000
+      - 8100:8000
     depends_on:
       db:
         condition: service_healthy
     environment:
       DB_HOST: db
+    networks:
+      - gateway_network
+      - internal_network
 
   db:
     image: postgres:17.0
@@ -34,6 +37,16 @@ services:
       retries: 6
     volumes:
       - postgres:/data/postgres
+    networks:
+      - internal_network
+
 
 volumes:
   postgres:
+
+networks:
+  gateway_network:
+    external: true
+    name: gateway_to_course_service_network
+  internal_network:
+    driver: bridge
