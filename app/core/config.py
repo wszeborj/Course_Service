@@ -9,18 +9,11 @@ load_dotenv()
 class Settings(BaseSettings):
     PROJECT_NAME: str
     DEBUG: bool = False
-    DB_NAME: str
-    DB_USER: str
-
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: int
-    AUTH0_CLIENT_ID: str
-    AUTH0_CLIENT_SECRET: str
-    AUTH0_DOMAIN: str
-    APP_SECRET_KEY: str
-    AUTH0_API_AUDIENCE: str
-    AUTH0_ALGORITHMS: str
+    DB_NAME: str | None = None
+    DB_USER: str | None = None
+    DB_PASSWORD: str | None = None
+    DB_HOST: str | None = None
+    DB_PORT: int | None = None
 
     @property
     def DATABASE_URL(self) -> str:
@@ -28,10 +21,6 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
-
-    @property
-    def AUTH0_ISSUER(self) -> str:
-        return f"https://{self.AUTH0_DOMAIN}/"
 
     model_config = SettingsConfigDict(
         env_file=".env",

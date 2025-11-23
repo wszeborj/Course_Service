@@ -45,7 +45,7 @@ Create PostgreSQL database
 ```bash
 psql -U postgres
 #provide password
-CREATE DATABASE course_db;
+CREATE DATABASE course_service_db;
 \q
 ```
 

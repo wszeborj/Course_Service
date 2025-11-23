@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api.v1 import api_router
+from .api.v1.api_router import api_router
 from .core.config import settings
 from .db.base import Base
 from .db.session import engine
@@ -16,6 +16,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
+
     print("Stopping...")
 
 
@@ -43,7 +44,7 @@ app.include_router(
 @app.get("/", tags=["Root"])
 def health_check() -> dict[str, str]:
     return {
-        "message": "Welcome to Course Service API",
+        "message": f"Welcome to {settings.PROJECT_NAME} API",
         "version": "1.0.0",
         "docs": "/docs",
         "status": "running",

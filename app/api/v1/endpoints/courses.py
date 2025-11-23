@@ -12,10 +12,10 @@ from typing import List, Sequence
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ... import crud
-from ...db.session import get_db
-from ...models import Course
-from ...schemas import CourseCreate, CourseResponse, CourseUpdate
+from .... import crud
+from ....db.session import get_db
+from ....models import Course
+from ....schemas import CourseCreate, CourseResponse, CourseUpdate
 
 router = APIRouter()
 

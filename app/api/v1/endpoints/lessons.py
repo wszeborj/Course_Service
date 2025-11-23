@@ -14,10 +14,10 @@ from typing import List, Sequence
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ... import crud
-from ...db.session import get_db
-from ...models import Lesson
-from ...schemas import LessonCreate, LessonResponse, LessonUpdate
+from .... import crud
+from ....db.session import get_db
+from ....models import Lesson
+from ....schemas import LessonCreate, LessonResponse, LessonUpdate
 
 router = APIRouter()
 
